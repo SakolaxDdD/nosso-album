@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nosso Álbum ❤️</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #4b4075; /* Roxo Headspace do OMORI */
+            font-family: 'VT323', monospace;
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            font-size: 3rem;
+            text-shadow: 2px 2px 0px #000;
+            margin-bottom: 10px;
+        }
+        .controls {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border: 2px solid #8e7cc3;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+            max-width: 400px;
+        }
+        input[type="file"], input[type="text"] {
+            font-family: 'VT323', monospace;
+            font-size: 1.2rem;
+            padding: 5px;
+        }
+        button {
+            background-color: #8e7cc3;
+            color: white;
+            border: 2px solid #fff;
+            padding: 10px;
+            font-size: 1.5rem;
+            font-family: 'VT323', monospace;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: transform 0.1s, background-color 0.2s;
+        }
+        button:hover {
+            background-color: #b4a7d6;
+        }
+        button:active {
+            transform: scale(0.95);
+        }
+        .album-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 30px;
+            width: 100%;
+            max-width: 1000px;
+        }
+        /* Estilo da Polaroid */
+        .polaroid {
+            background: #fdfbf7;
+            padding: 15px 15px 50px 15px;
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            transform: rotate(-2deg);
+            transition: transform 0.3s;
+        }
+        .polaroid:nth-child(even) {
+            transform: rotate(3deg);
+        }
+        .polaroid:hover {
+            transform: scale(1.05) rotate(0deg);
+            z-index: 10;
+        }
+        .polaroid img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border: 1px solid #ccc;
+            background: #222;
+        }
+        .polaroid .caption {
+            color: #333;
+            font-size: 1.6rem;
+            margin-top: 15px;
+            text-align: center;
+            line-height: 1.1;
+        }
+        .delete-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: red;
+            color: white;
+            border: none;
+            font-size: 1rem;
+            cursor: pointer;
+            border-radius: 3px;
+            padding: 2px 6px;
+            display: none;
+        }
+        .polaroid:hover .delete-btn {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Nosso Álbum</h1>
+
+    <div class="controls">
+        <label>1. Escolha uma foto:</label>
+        <input type="file" id="imageInput" accept="image/*">
+        
+        <label>2. Escreva uma legenda fofa:</label>
+        <input type="text" id="captionInput" placeholder="Ex: Nosso primeiro piquenique...">
+        
+        <button onclick="addPhoto()">Colar no Álbum</button>
+    </div>
+
+    <div class="album-grid" id="albumGrid">
+        <!-- As fotos vão aparecer aqui -->
+    </div>
+
+    <script>
+        // Carrega as fotos salvas no navegador quando a página abre
+        let photos = JSON.parse(localStorage.getItem('omori_album')) || [];
+
+        function renderAlbum() {
+            const grid = document.getElementById('albumGrid');
+            grid.innerHTML = ''; // Limpa a tela
+
+            photos.forEach((photo, index) => {
+                const polaroid = document.createElement('div');
+                polaroid.className = 'polaroid';
+                
+                polaroid.innerHTML = `
+                    <button class="delete-btn" onclick="deletePhoto(${index})">X</button>
+                    <img src="${photo.image}" alt="Memory">
+                    <div class="caption">${photo.caption}</div>
+                `;
+                
+                grid.appendChild(polaroid);
+            });
+        }
+
+        function addPhoto() {
+            const imageInput = document.getElementById('imageInput');
+            const captionInput = document.getElementById('captionInput');
+
+            if (imageInput.files.length === 0) {
+                alert('Por favor, escolha uma imagem primeiro!');
+                return;
+            }
+
+            const file = imageInput.files[0];
+            const reader = new FileReader();
+
+            // Quando terminar de ler a imagem, salva e atualiza a tela
+            reader.onload = function(e) {
+                const newPhoto = {
+                    image: e.target.result,
+                    caption: captionInput.value || '...'
+                };
+
+                photos.push(newPhoto);
+                localStorage.setItem('omori_album', JSON.stringify(photos));
+                
+                // Limpa os inputs
+                imageInput.value = '';
+                captionInput.value = '';
+                
+                renderAlbum();
+            };
+
+            // Transforma a imagem num texto (Base64) para poder salvar
+            reader.readAsDataURL(file);
+        }
+
+        function deletePhoto(index) {
+            if(confirm("Tem certeza que quer remover essa memória?")) {
+                photos.splice(index, 1);
+                localStorage.setItem('omori_album', JSON.stringify(photos));
+                renderAlbum();
+            }
+        }
+
+        // Renderiza o álbum logo que a página carrega
+        renderAlbum();
+    </script>
+</body>
+</html>
