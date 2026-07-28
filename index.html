@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Nosso Álbum ❤️</title>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
-    <!-- Importando o Supabase -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
         
@@ -17,31 +15,22 @@
             height: 100vh; overflow: hidden; perspective: 1500px; 
         }
 
-        .book-container {
-            position: relative; width: 90%; max-width: 450px; height: 70vh; transform-style: preserve-3d;
-        }
+        .book-container { position: relative; width: 90%; max-width: 450px; height: 70vh; transform-style: preserve-3d; }
 
-        /* --- A CAPA DO LIVRO --- */
         .cover {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #2a1f42;
             border-radius: 5px 15px 15px 5px; box-shadow: inset -5px 0 15px rgba(0,0,0,0.3), 15px 15px 30px rgba(0,0,0,0.7);
             border-left: 12px solid #1c142e; border-right: 2px solid #5a4b82; display: flex;
             flex-direction: column; align-items: center; justify-content: center; z-index: 20; cursor: pointer;
-            transform-origin: left center; 
-            transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.4s ease 0.4s;
+            transform-origin: left center; transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.4s ease 0.4s;
         }
 
         .cover-title { font-size: 3.5rem; text-align: center; text-shadow: 4px 4px 0px #000; margin-bottom: 20px; padding: 0 20px; }
         .cover-hint { font-size: 1.5rem; color: #FF00FF; animation: pulse 1.5s infinite; }
-
         @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
 
-        .cover.open {
-            transform: rotateY(-140deg); opacity: 0; pointer-events: none; 
-            transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.3s ease 0.2s;
-        }
+        .cover.open { transform: rotateY(-140deg); opacity: 0; pointer-events: none; transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.3s ease 0.2s; }
 
-        /* --- AS PÁGINAS DE DENTRO --- */
         .inside-album {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #fdfbf7;
             border-radius: 4px 15px 15px 4px; box-shadow: inset 10px 0 20px rgba(0,0,0,0.1), 10px 10px 30px rgba(0,0,0,0.5);
@@ -55,7 +44,6 @@
         @keyframes foldRightOut { to { transform: rotateY(90deg); transform-origin: right center; opacity: 0; } }
         @keyframes foldLeftIn { from { transform: rotateY(-90deg); transform-origin: left center; opacity: 0; } to { transform: rotateY(0deg); transform-origin: left center; opacity: 1; } }
 
-        /* Os Espaços das Fotos */
         .slot {
             flex: 1; border: 3px dashed #FF00FF; border-radius: 8px; display: flex; flex-direction: column;
             align-items: center; justify-content: center; cursor: pointer; position: relative; overflow: hidden;
@@ -66,7 +54,7 @@
         .slot:hover .plus { transform: scale(1.2); }
         .slot.filled { border: 1px solid #ddd; background: #fff; box-shadow: 2px 2px 10px rgba(0,0,0,0.2); cursor: default; }
         .slot img { width: 100%; height: calc(100% - 40px); object-fit: cover; border-bottom: 1px solid #eee; }
-        .slot .caption { height: 40px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; color: #222; width: 100%; }
+        .slot .caption { height: 40px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; color: #222; width: 100%; text-align: center; }
         
         .delete-btn {
             position: absolute; top: 5px; right: 5px; background: #e06666; color: white; border: none; font-size: 1.2rem;
@@ -74,7 +62,6 @@
         }
         .slot.filled:hover .delete-btn { opacity: 1; }
 
-        /* Navegação */
         .navigation {
             display: flex; justify-content: space-between; align-items: center; width: 90%; max-width: 450px;
             margin-top: 20px; opacity: 0; pointer-events: none; transition: opacity 0.5s ease;
@@ -87,7 +74,6 @@
         .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; border-color: #fff; }
         .page-indicator { font-size: 1.5rem; }
 
-        /* Ícone Flutuante da Carta */
         .floating-letter-btn {
             position: fixed; bottom: 80px; right: 25px; background: #FF00FF; color: #fff; font-size: 2rem;
             width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;
@@ -96,9 +82,7 @@
         }
         .floating-letter-btn:hover { transform: scale(1.1); }
 
-        /* Modais */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 100; }
-        
         .modal-box { background: #fdfbf7; padding: 25px; border-radius: 10px; border: 3px solid #FF00FF; text-align: center; width: 90%; max-width: 350px; position: relative; }
         .modal-box h2 { color: #333; margin-top: 0; }
         
@@ -113,12 +97,10 @@
             font-size: 1.2rem; font-family: 'VT323', monospace; cursor: pointer; border-radius: 5px; padding: 2px 10px;
         }
         
-        /* Loading global */
         #loadingOverlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7);
             display: none; justify-content: center; align-items: center; z-index: 200; font-size: 2rem; color: #FF00FF;
         }
-
     </style>
 </head>
 <body>
@@ -168,38 +150,45 @@ Eu te amo Fran, obrigado por participar da minha vida 🩷🍬☕</div>
 
     <script>
         // === VARIÁVEIS GLOBAIS ===
+        const supabaseUrl = 'https://tkhhkuqazuxpohjqqbcn.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRraGhrdXFhenV4cG9oanFxYmNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyMDY0MjMsImV4cCI6MjEwMDc4MjQyM30.xjD3rBk2ejCQPqrsdZstOzZrRCXya1YD1c8_8YERCm8';
+        
         let photosData = []; 
         let currentPage = 0;
         const slotsPerPage = 2;
         let isAnimating = false; 
         let isBookOpen = false;
-        let supabase = null;
 
-        // Função auxiliar para pegar elementos sem erro
         function getEl(id) { return document.getElementById(id); }
 
-        // === FUNÇÕES DA INTERFACE ===
+        const flipSound = new Audio('som.mp3');
+        function playFlipSound() {
+            try {
+                if (flipSound.readyState > 0) flipSound.currentTime = 0; 
+                let playPromise = flipSound.play();
+                if (playPromise !== undefined) playPromise.catch(e => {});
+            } catch (err) {}
+        }
+
         function openLetter() { getEl('letterModal').style.display = 'flex'; }
         function closeLetter() { getEl('letterModal').style.display = 'none'; }
 
         function openBook() {
-            try {
-                getEl('bookCover').classList.add('open');
-                getEl('letterBtn').style.opacity = '0'; 
-                getEl('letterBtn').style.pointerEvents = 'none';
-                isBookOpen = true;
-                
-                setTimeout(() => {
-                    getEl('navigationBar').style.opacity = '1'; 
-                    getEl('navigationBar').style.pointerEvents = 'auto';
-                    renderPageUI(); 
-                }, 500);
-            } catch (err) {
-                console.error("Erro ao abrir o livro:", err);
-            }
+            playFlipSound();
+            getEl('bookCover').classList.add('open');
+            getEl('letterBtn').style.opacity = '0'; 
+            getEl('letterBtn').style.pointerEvents = 'none';
+            isBookOpen = true;
+            
+            setTimeout(() => {
+                getEl('navigationBar').style.opacity = '1'; 
+                getEl('navigationBar').style.pointerEvents = 'auto';
+                renderPageUI(); 
+            }, 500);
         }
 
         function closeBook() {
+            playFlipSound();
             getEl('navigationBar').style.opacity = '0'; 
             getEl('navigationBar').style.pointerEvents = 'none';
             isBookOpen = false;
@@ -227,15 +216,10 @@ Eu te amo Fran, obrigado por participar da minha vida 🩷🍬☕</div>
                         <div class="caption">${photo.caption}</div>
                     `;
                 } else {
-                    if (globalSlotIndex === photosData.length) {
-                        slotDiv.className = 'slot';
-                        slotDiv.innerHTML = `<div class="plus">+</div>`;
-                        slotDiv.onclick = () => getEl('fileInput').click();
-                    } else if (globalSlotIndex > photosData.length) {
-                        slotDiv.className = 'slot';
-                        slotDiv.style.border = 'none';
-                        slotDiv.style.background = 'transparent';
-                    }
+                    // Agora sempre desenha o quadrado com o "+"
+                    slotDiv.className = 'slot';
+                    slotDiv.innerHTML = `<div class="plus">+</div>`;
+                    slotDiv.onclick = () => getEl('fileInput').click();
                 }
                 pageContent.appendChild(slotDiv);
             }
@@ -248,9 +232,8 @@ Eu te amo Fran, obrigado por participar da minha vida 🩷🍬☕</div>
             if (isAnimating) return; 
             if (direction === -1 && currentPage === 0) { closeBook(); return; }
 
-            const startSlot = currentPage * slotsPerPage;
-            if (direction === 1 && !photosData[startSlot]) return; 
-
+            // Lógica antiga impedia de avançar. Removi isso para você poder folhear livremente!
+            playFlipSound();
             isAnimating = true;
             const pageContent = getEl('pageContent');
             pageContent.style.animation = direction === 1 ? 'foldLeftOut 0.35s forwards' : 'foldRightOut 0.35s forwards';
@@ -263,7 +246,76 @@ Eu te amo Fran, obrigado por participar da minha vida 🩷🍬☕</div>
             }, 350); 
         }
 
-        // === EVENTOS DO MODAL E SWIPE ===
+        async function loadPhotosFromCloud() {
+            try {
+                const res = await fetch(`${supabaseUrl}/rest/v1/photos?select=*&order=created_at.asc`, {
+                    headers: { 'apikey': supabaseKey, 'Authorization': `Bearer ${supabaseKey}` }
+                });
+                if (res.ok) {
+                    photosData = await res.json();
+                    if (isBookOpen) renderPageUI();
+                }
+            } catch (err) { console.log("Erro ao carregar", err); }
+        }
+
+        async function savePhotoWithCaption() {
+            const fileInput = getEl('fileInput');
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            getEl('captionModal').style.display = 'none';
+            getEl('loadingOverlay').style.display = 'flex'; 
+
+            const fileExt = file.name.split('.').pop();
+            const fileName = `foto_${Date.now()}.${fileExt}`;
+            const caption = getEl('modalCaptionInput').value || '...';
+
+            try {
+                // Upload
+                const uploadRes = await fetch(`${supabaseUrl}/storage/v1/object/album_fotos/${fileName}`, {
+                    method: 'POST',
+                    headers: { 'apikey': supabaseKey, 'Authorization': `Bearer ${supabaseKey}`, 'Content-Type': file.type },
+                    body: file
+                });
+                if (!uploadRes.ok) throw new Error("Erro no upload");
+
+                const publicUrl = `${supabaseUrl}/storage/v1/object/public/album_fotos/${fileName}`;
+
+                // Salvar
+                const dbRes = await fetch(`${supabaseUrl}/rest/v1/photos`, {
+                    method: 'POST',
+                    headers: { 'apikey': supabaseKey, 'Authorization': `Bearer ${supabaseKey}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ image_url: publicUrl, caption: caption })
+                });
+                if (!dbRes.ok) throw new Error("Erro no banco");
+
+                await loadPhotosFromCloud();
+                fileInput.value = '';
+            } catch (err) {
+                alert("Erro ao salvar! Veja se o Supabase tem permissão.");
+                console.error(err);
+            }
+            getEl('loadingOverlay').style.display = 'none';
+        }
+
+        async function deletePhoto(id, event) {
+            event.stopPropagation();
+            if(confirm("Tem certeza que quer remover essa foto?")) {
+                getEl('loadingOverlay').style.display = 'flex';
+                try {
+                    await fetch(`${supabaseUrl}/rest/v1/photos?id=eq.${id}`, {
+                        method: 'DELETE',
+                        headers: { 'apikey': supabaseKey, 'Authorization': `Bearer ${supabaseKey}` }
+                    });
+                    await loadPhotosFromCloud();
+                    const maxPage = Math.max(0, Math.ceil(photosData.length / slotsPerPage) - 1);
+                    if (currentPage > maxPage) currentPage = maxPage;
+                    renderPageUI();
+                } catch(e) { console.log(e); }
+                getEl('loadingOverlay').style.display = 'none';
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             getEl('fileInput').addEventListener('change', function(e) {
                 if (e.target.files.length === 0) return;
@@ -285,99 +337,8 @@ Eu te amo Fran, obrigado por participar da minha vida 🩷🍬☕</div>
                 }
             }, {passive: true});
 
-            // Iniciar Banco de Dados com Segurança
-            initDatabase();
+            loadPhotosFromCloud();
         });
-
-        // === SUPABASE E BANCO DE DADOS ===
-        async function initDatabase() {
-            try {
-                if (window.supabase) {
-                    const supabaseUrl = 'https://tkhhkuqazuxpohjqqbcn.supabase.co';
-                    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRraGhrdXFhenV4cG9oanFxYmNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyMDY0MjMsImV4cCI6MjEwMDc4MjQyM30.xjD3rBk2ejCQPqrsdZstOzZrRCXya1YD1c8_8YERCm8';
-                    supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-                    await loadPhotosFromCloud();
-                } else {
-                    console.log("Supabase não foi carregado pelo navegador.");
-                }
-            } catch (err) {
-                console.log("Erro ao iniciar banco de dados:", err);
-            }
-        }
-
-        async function loadPhotosFromCloud() {
-            if (!supabase) return;
-            try {
-                const { data, error } = await supabase
-                    .from('photos')
-                    .select('*')
-                    .order('created_at', { ascending: true });
-
-                if (!error && data) {
-                    photosData = data;
-                    if (isBookOpen) renderPageUI();
-                }
-            } catch (err) {
-                console.log("Erro ao carregar fotos", err);
-            }
-        }
-
-        async function savePhotoWithCaption() {
-            if (!supabase) return alert("Erro de conexão com o banco de dados.");
-            
-            const fileInput = getEl('fileInput');
-            const file = fileInput.files[0];
-            if (!file) return;
-
-            getEl('captionModal').style.display = 'none';
-            getEl('loadingOverlay').style.display = 'flex'; 
-
-            const fileExt = file.name.split('.').pop();
-            const fileName = `foto_${Date.now()}.${fileExt}`;
-            const caption = getEl('modalCaptionInput').value || '...';
-
-            try {
-                const { data: uploadData, error: uploadError } = await supabase.storage
-                    .from('album_fotos')
-                    .upload(fileName, file);
-
-                if (uploadError) throw uploadError;
-
-                const { data: urlData } = supabase.storage
-                    .from('album_fotos')
-                    .getPublicUrl(fileName);
-
-                await supabase.from('photos').insert([{ image_url: urlData.publicUrl, caption: caption }]);
-
-                await loadPhotosFromCloud();
-                fileInput.value = '';
-            } catch (err) {
-                alert("Erro ao salvar foto no celular.");
-                console.error(err);
-            }
-            getEl('loadingOverlay').style.display = 'none';
-        }
-
-        async function deletePhoto(id, event) {
-            event.stopPropagation();
-            if (!supabase) return;
-            
-            if(confirm("Tem certeza que quer remover essa foto?")) {
-                getEl('loadingOverlay').style.display = 'flex';
-                try {
-                    await supabase.from('photos').delete().eq('id', id);
-                    await loadPhotosFromCloud();
-                    
-                    const maxPage = Math.max(0, Math.ceil(photosData.length / slotsPerPage) - 1);
-                    if (currentPage > maxPage) currentPage = maxPage;
-                    
-                    renderPageUI();
-                } catch(e) {
-                    console.log(e);
-                }
-                getEl('loadingOverlay').style.display = 'none';
-            }
-        }
     </script>
 </body>
 </html>
