@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nosso Álbum de Fotos ❤️</title>
+    <title>Nosso Álbum ❤️</title>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
-    <!-- Importando o Supabase para o Navegador -->
+    <!-- Importando o Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        * { box-sizing: border-box; user-select: none; }
+        * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
         
         body {
             background: linear-gradient(135deg, #4b4075 0%, #2a2342 100%);
@@ -167,82 +167,50 @@ Eu te amo Fran, obrigado por participar da minha vida 🩷🍬☕</div>
     </div>
 
     <script>
-        // === CONFIGURAÇÃO DO SUPABASE ===
-        const supabaseUrl = 'https://tkhhkuqazuxpohjqqbcn.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRraGhrdXFhenV4cG9oanFxYmNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyMDY0MjMsImV4cCI6MjEwMDc4MjQyM30.xjD3rBk2ejCQPqrsdZstOzZrRCXya1YD1c8_8YERCm8';
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-
-        const flipSound = new Audio('som.mp3');
-        
-        // CORREÇÃO: O áudio agora tem proteção contra erros no celular!
-        function playFlipSound() {
-            try {
-                if (flipSound.readyState > 0) {
-                    flipSound.currentTime = 0; 
-                }
-                let playPromise = flipSound.play();
-                if (playPromise !== undefined) {
-                    playPromise.catch(e => console.log('Áudio aguardando interação do usuário...'));
-                }
-            } catch (err) {
-                console.log('Erro no áudio ignorado', err);
-            }
-        }
-
+        // === VARIÁVEIS GLOBAIS ===
         let photosData = []; 
         let currentPage = 0;
         const slotsPerPage = 2;
         let isAnimating = false; 
         let isBookOpen = false;
+        let supabase = null;
 
-        const fileInput = document.getElementById('fileInput');
-        const modal = document.getElementById('captionModal');
-        const captionInput = document.getElementById('modalCaptionInput');
-        const pageContent = document.getElementById('pageContent');
-        const btnPrev = document.getElementById('btnPrev');
-        const navBar = document.getElementById('navigationBar');
-        const letterBtn = document.getElementById('letterBtn');
-        const loading = document.getElementById('loadingOverlay');
+        // Função auxiliar para pegar elementos sem erro
+        function getEl(id) { return document.getElementById(id); }
 
-        // BUSCAR FOTOS DO BANCO DE DADOS
-        async function loadPhotosFromCloud() {
-            const { data, error } = await supabase
-                .from('photos')
-                .select('*')
-                .order('created_at', { ascending: true });
-
-            if (!error && data) {
-                photosData = data;
-                if (isBookOpen) renderPageUI();
-            }
-        }
-        
-        loadPhotosFromCloud();
-
-        function openLetter() { document.getElementById('letterModal').style.display = 'flex'; }
-        function closeLetter() { document.getElementById('letterModal').style.display = 'none'; }
+        // === FUNÇÕES DA INTERFACE ===
+        function openLetter() { getEl('letterModal').style.display = 'flex'; }
+        function closeLetter() { getEl('letterModal').style.display = 'none'; }
 
         function openBook() {
-            playFlipSound(); 
-            document.getElementById('bookCover').classList.add('open');
-            letterBtn.style.opacity = '0'; letterBtn.style.pointerEvents = 'none';
-            isBookOpen = true;
-            setTimeout(() => {
-                navBar.style.opacity = '1'; navBar.style.pointerEvents = 'auto';
-                renderPageUI(); 
-            }, 500);
+            try {
+                getEl('bookCover').classList.add('open');
+                getEl('letterBtn').style.opacity = '0'; 
+                getEl('letterBtn').style.pointerEvents = 'none';
+                isBookOpen = true;
+                
+                setTimeout(() => {
+                    getEl('navigationBar').style.opacity = '1'; 
+                    getEl('navigationBar').style.pointerEvents = 'auto';
+                    renderPageUI(); 
+                }, 500);
+            } catch (err) {
+                console.error("Erro ao abrir o livro:", err);
+            }
         }
 
         function closeBook() {
-            playFlipSound(); 
-            navBar.style.opacity = '0'; navBar.style.pointerEvents = 'none';
+            getEl('navigationBar').style.opacity = '0'; 
+            getEl('navigationBar').style.pointerEvents = 'none';
             isBookOpen = false;
-            document.getElementById('bookCover').classList.remove('open');
-            letterBtn.style.opacity = '1'; letterBtn.style.pointerEvents = 'auto';
+            getEl('bookCover').classList.remove('open');
+            getEl('letterBtn').style.opacity = '1'; 
+            getEl('letterBtn').style.pointerEvents = 'auto';
             currentPage = 0; 
         }
 
         function renderPageUI() {
+            const pageContent = getEl('pageContent');
             pageContent.innerHTML = '';
             
             const startSlot = currentPage * slotsPerPage;
@@ -262,7 +230,7 @@ Eu te amo Fran, obrigado por participar da minha vida 🩷🍬☕</div>
                     if (globalSlotIndex === photosData.length) {
                         slotDiv.className = 'slot';
                         slotDiv.innerHTML = `<div class="plus">+</div>`;
-                        slotDiv.onclick = () => fileInput.click();
+                        slotDiv.onclick = () => getEl('fileInput').click();
                     } else if (globalSlotIndex > photosData.length) {
                         slotDiv.className = 'slot';
                         slotDiv.style.border = 'none';
@@ -272,8 +240,8 @@ Eu te amo Fran, obrigado por participar da minha vida 🩷🍬☕</div>
                 pageContent.appendChild(slotDiv);
             }
 
-            document.getElementById('pageNumber').innerText = currentPage + 1;
-            btnPrev.innerHTML = (currentPage === 0) ? 'Fechar 📕' : '&#9664; Voltar';
+            getEl('pageNumber').innerText = currentPage + 1;
+            getEl('btnPrev').innerHTML = (currentPage === 0) ? 'Fechar 📕' : '&#9664; Voltar';
         }
 
         function changePage(direction) {
@@ -283,9 +251,8 @@ Eu te amo Fran, obrigado por participar da minha vida 🩷🍬☕</div>
             const startSlot = currentPage * slotsPerPage;
             if (direction === 1 && !photosData[startSlot]) return; 
 
-            playFlipSound(); 
             isAnimating = true;
-
+            const pageContent = getEl('pageContent');
             pageContent.style.animation = direction === 1 ? 'foldLeftOut 0.35s forwards' : 'foldRightOut 0.35s forwards';
 
             setTimeout(() => {
@@ -296,23 +263,78 @@ Eu te amo Fran, obrigado por participar da minha vida 🩷🍬☕</div>
             }, 350); 
         }
 
-        fileInput.addEventListener('change', function(e) {
-            if (e.target.files.length === 0) return;
-            modal.style.display = 'flex';
-            captionInput.value = '';
-            captionInput.focus();
+        // === EVENTOS DO MODAL E SWIPE ===
+        document.addEventListener('DOMContentLoaded', () => {
+            getEl('fileInput').addEventListener('change', function(e) {
+                if (e.target.files.length === 0) return;
+                getEl('captionModal').style.display = 'flex';
+                getEl('modalCaptionInput').value = '';
+                getEl('modalCaptionInput').focus();
+            });
+
+            let touchstartX = 0; let touchendX = 0;
+            const album = getEl('bookContainer');
+
+            album.addEventListener('touchstart', e => { touchstartX = e.changedTouches[0].screenX; }, {passive: true});
+            album.addEventListener('touchend', e => { 
+                touchendX = e.changedTouches[0].screenX;
+                const swipeThreshold = 60; 
+                if (isBookOpen) {
+                    if (touchendX < touchstartX - swipeThreshold) changePage(1); 
+                    if (touchendX > touchstartX + swipeThreshold) changePage(-1); 
+                }
+            }, {passive: true});
+
+            // Iniciar Banco de Dados com Segurança
+            initDatabase();
         });
 
+        // === SUPABASE E BANCO DE DADOS ===
+        async function initDatabase() {
+            try {
+                if (window.supabase) {
+                    const supabaseUrl = 'https://tkhhkuqazuxpohjqqbcn.supabase.co';
+                    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRraGhrdXFhenV4cG9oanFxYmNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyMDY0MjMsImV4cCI6MjEwMDc4MjQyM30.xjD3rBk2ejCQPqrsdZstOzZrRCXya1YD1c8_8YERCm8';
+                    supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+                    await loadPhotosFromCloud();
+                } else {
+                    console.log("Supabase não foi carregado pelo navegador.");
+                }
+            } catch (err) {
+                console.log("Erro ao iniciar banco de dados:", err);
+            }
+        }
+
+        async function loadPhotosFromCloud() {
+            if (!supabase) return;
+            try {
+                const { data, error } = await supabase
+                    .from('photos')
+                    .select('*')
+                    .order('created_at', { ascending: true });
+
+                if (!error && data) {
+                    photosData = data;
+                    if (isBookOpen) renderPageUI();
+                }
+            } catch (err) {
+                console.log("Erro ao carregar fotos", err);
+            }
+        }
+
         async function savePhotoWithCaption() {
+            if (!supabase) return alert("Erro de conexão com o banco de dados.");
+            
+            const fileInput = getEl('fileInput');
             const file = fileInput.files[0];
             if (!file) return;
 
-            modal.style.display = 'none';
-            loading.style.display = 'flex'; 
+            getEl('captionModal').style.display = 'none';
+            getEl('loadingOverlay').style.display = 'flex'; 
 
             const fileExt = file.name.split('.').pop();
             const fileName = `foto_${Date.now()}.${fileExt}`;
-            const caption = captionInput.value || '...';
+            const caption = getEl('modalCaptionInput').value || '...';
 
             try {
                 const { data: uploadData, error: uploadError } = await supabase.storage
@@ -330,39 +352,32 @@ Eu te amo Fran, obrigado por participar da minha vida 🩷🍬☕</div>
                 await loadPhotosFromCloud();
                 fileInput.value = '';
             } catch (err) {
-                alert("Erro ao salvar foto. Verifique se o bucket 'album_fotos' existe e tem permissão!");
+                alert("Erro ao salvar foto no celular.");
                 console.error(err);
             }
-            loading.style.display = 'none';
+            getEl('loadingOverlay').style.display = 'none';
         }
 
         async function deletePhoto(id, event) {
             event.stopPropagation();
-            if(confirm("Tem certeza que quer remover essa foto do nosso álbum?")) {
-                loading.style.display = 'flex';
-                await supabase.from('photos').delete().eq('id', id);
-                await loadPhotosFromCloud();
-                
-                const maxPage = Math.max(0, Math.ceil(photosData.length / slotsPerPage) - 1);
-                if (currentPage > maxPage) currentPage = maxPage;
-                
-                renderPageUI();
-                loading.style.display = 'none';
+            if (!supabase) return;
+            
+            if(confirm("Tem certeza que quer remover essa foto?")) {
+                getEl('loadingOverlay').style.display = 'flex';
+                try {
+                    await supabase.from('photos').delete().eq('id', id);
+                    await loadPhotosFromCloud();
+                    
+                    const maxPage = Math.max(0, Math.ceil(photosData.length / slotsPerPage) - 1);
+                    if (currentPage > maxPage) currentPage = maxPage;
+                    
+                    renderPageUI();
+                } catch(e) {
+                    console.log(e);
+                }
+                getEl('loadingOverlay').style.display = 'none';
             }
         }
-
-        let touchstartX = 0; let touchendX = 0;
-        const album = document.getElementById('bookContainer');
-
-        album.addEventListener('touchstart', e => { touchstartX = e.changedTouches[0].screenX; }, {passive: true});
-        album.addEventListener('touchend', e => { 
-            touchendX = e.changedTouches[0].screenX;
-            const swipeThreshold = 60; 
-            if (isBookOpen) {
-                if (touchendX < touchstartX - swipeThreshold) changePage(1); 
-                if (touchendX > touchstartX + swipeThreshold) changePage(-1); 
-            }
-        }, {passive: true});
     </script>
 </body>
 </html>
