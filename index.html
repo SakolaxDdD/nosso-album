@@ -2,203 +2,295 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Nosso Álbum ❤️</title>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <style>
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; user-select: none; }
+        
         body {
-            background-color: #4b4075; /* Roxo Headspace do OMORI */
-            font-family: 'VT323', monospace;
-            color: #fff;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            background: linear-gradient(135deg, #4b4075 0%, #2a2342 100%);
+            font-family: 'VT323', monospace; color: #fff; margin: 0; padding: 0;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            height: 100vh; overflow: hidden; perspective: 1500px; 
         }
-        h1 {
-            font-size: 3rem;
-            text-shadow: 2px 2px 0px #000;
-            margin-bottom: 10px;
+
+        .book-container {
+            position: relative; width: 90%; max-width: 450px; height: 70vh; transform-style: preserve-3d;
         }
-        .controls {
-            background: rgba(0, 0, 0, 0.3);
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 30px;
-            border: 2px solid #8e7cc3;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            width: 100%;
-            max-width: 400px;
+
+        /* --- A CAPA DO LIVRO --- */
+        .cover {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #2a1f42;
+            border-radius: 5px 15px 15px 5px; box-shadow: inset -5px 0 15px rgba(0,0,0,0.3), 15px 15px 30px rgba(0,0,0,0.7);
+            border-left: 12px solid #1c142e; border-right: 2px solid #5a4b82; display: flex;
+            flex-direction: column; align-items: center; justify-content: center; z-index: 20; cursor: pointer;
+            transform-origin: left center; 
+            transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.4s ease 0.4s;
         }
-        input[type="file"], input[type="text"] {
-            font-family: 'VT323', monospace;
-            font-size: 1.2rem;
-            padding: 5px;
+
+        .cover-title { font-size: 3.5rem; text-align: center; text-shadow: 4px 4px 0px #000; margin-bottom: 20px; padding: 0 20px; }
+        .cover-hint { font-size: 1.5rem; color: #b4a7d6; animation: pulse 1.5s infinite; }
+
+        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+
+        .cover.open {
+            transform: rotateY(-140deg); opacity: 0; pointer-events: none; 
+            transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.3s ease 0.2s;
         }
-        button {
-            background-color: #8e7cc3;
-            color: white;
-            border: 2px solid #fff;
-            padding: 10px;
-            font-size: 1.5rem;
-            font-family: 'VT323', monospace;
-            cursor: pointer;
-            border-radius: 5px;
-            transition: transform 0.1s, background-color 0.2s;
+
+        /* --- AS PÁGINAS DE DENTRO --- */
+        .inside-album {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #fdfbf7;
+            border-radius: 4px 15px 15px 4px; box-shadow: inset 10px 0 20px rgba(0,0,0,0.1), 10px 10px 30px rgba(0,0,0,0.5);
+            border-left: 8px solid #3a2e5d; display: flex; flex-direction: column; padding: 20px; color: #333; z-index: 10;
         }
-        button:hover {
-            background-color: #b4a7d6;
+
+        .page-content { display: flex; flex-direction: column; gap: 20px; height: 100%; }
+
+        @keyframes foldLeftOut { to { transform: rotateY(-90deg); transform-origin: left center; opacity: 0; } }
+        @keyframes foldRightIn { from { transform: rotateY(90deg); transform-origin: right center; opacity: 0; } to { transform: rotateY(0deg); transform-origin: right center; opacity: 1; } }
+        @keyframes foldRightOut { to { transform: rotateY(90deg); transform-origin: right center; opacity: 0; } }
+        @keyframes foldLeftIn { from { transform: rotateY(-90deg); transform-origin: left center; opacity: 0; } to { transform: rotateY(0deg); transform-origin: left center; opacity: 1; } }
+
+        /* Os Espaços das Fotos */
+        .slot {
+            flex: 1; border: 3px dashed #b4a7d6; border-radius: 8px; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; cursor: pointer; position: relative; overflow: hidden;
+            background: #faf8f5; transition: all 0.2s;
         }
-        button:active {
-            transform: scale(0.95);
-        }
-        .album-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 30px;
-            width: 100%;
-            max-width: 1000px;
-        }
-        /* Estilo da Polaroid */
-        .polaroid {
-            background: #fdfbf7;
-            padding: 15px 15px 50px 15px;
-            box-shadow: 5px 5px 15px rgba(0,0,0,0.5);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            position: relative;
-            transform: rotate(-2deg);
-            transition: transform 0.3s;
-        }
-        .polaroid:nth-child(even) {
-            transform: rotate(3deg);
-        }
-        .polaroid:hover {
-            transform: scale(1.05) rotate(0deg);
-            z-index: 10;
-        }
-        .polaroid img {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-            border: 1px solid #ccc;
-            background: #222;
-        }
-        .polaroid .caption {
-            color: #333;
-            font-size: 1.6rem;
-            margin-top: 15px;
-            text-align: center;
-            line-height: 1.1;
-        }
+        .slot:hover { background: #f0ebf5; border-color: #8e7cc3; }
+        .slot .plus { font-size: 5rem; color: #b4a7d6; transition: transform 0.2s; }
+        .slot:hover .plus { transform: scale(1.2); color: #8e7cc3; }
+        .slot.filled { border: 1px solid #ddd; background: #fff; box-shadow: 2px 2px 10px rgba(0,0,0,0.2); cursor: default; }
+        .slot img { width: 100%; height: calc(100% - 40px); object-fit: cover; border-bottom: 1px solid #eee; }
+        .slot .caption { height: 40px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; color: #222; width: 100%; }
+        
         .delete-btn {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background: red;
-            color: white;
-            border: none;
-            font-size: 1rem;
-            cursor: pointer;
-            border-radius: 3px;
-            padding: 2px 6px;
-            display: none;
+            position: absolute; top: 5px; right: 5px; background: #e06666; color: white; border: none; font-size: 1.2rem;
+            font-family: 'VT323', monospace; cursor: pointer; border-radius: 5px; padding: 2px 8px; opacity: 0; transition: opacity 0.2s;
         }
-        .polaroid:hover .delete-btn {
-            display: block;
+        .slot.filled:hover .delete-btn { opacity: 1; }
+
+        /* Navegação */
+        .navigation {
+            display: flex; justify-content: space-between; align-items: center; width: 90%; max-width: 450px;
+            margin-top: 20px; opacity: 0; pointer-events: none; transition: opacity 0.5s ease;
         }
+        .nav-btn {
+            background: transparent; color: #fff; border: 2px solid #fff; padding: 8px 15px; font-size: 1.5rem;
+            font-family: 'VT323', monospace; cursor: pointer; border-radius: 5px; transition: 0.2s; width: 110px; text-align: center;
+        }
+        .nav-btn:hover { background: #fff; color: #4b4075; }
+        .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+        .page-indicator { font-size: 1.5rem; }
+
+        /* Modal */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 100; }
+        .modal-box { background: #fdfbf7; padding: 25px; border-radius: 10px; border: 3px solid #8e7cc3; text-align: center; width: 90%; max-width: 350px; }
+        .modal-box h2 { color: #333; margin-top: 0; }
+        .modal-box input { width: 100%; font-family: 'VT323', monospace; font-size: 1.5rem; padding: 10px; margin-bottom: 20px; border: 2px solid #ccc; border-radius: 5px; }
+        .modal-box button { background: #8e7cc3; color: white; border: none; padding: 10px 20px; font-size: 1.5rem; font-family: 'VT323', monospace; cursor: pointer; border-radius: 5px; }
     </style>
 </head>
 <body>
 
-    <h1>Nosso Álbum</h1>
-
-    <div class="controls">
-        <label>1. Escolha uma foto:</label>
-        <input type="file" id="imageInput" accept="image/*">
-        
-        <label>2. Escreva uma legenda fofa:</label>
-        <input type="text" id="captionInput" placeholder="Ex: Nosso primeiro piquenique...">
-        
-        <button onclick="addPhoto()">Colar no Álbum</button>
+    <div class="book-container" id="bookContainer">
+        <div class="cover" id="bookCover" onclick="openBook()">
+            <div class="cover-title">Nosso Álbum<br>❤️</div>
+            <div class="cover-hint">Toque para abrir</div>
+        </div>
+        <div class="inside-album">
+            <div class="page-content" id="pageContent"></div>
+        </div>
     </div>
 
-    <div class="album-grid" id="albumGrid">
-        <!-- As fotos vão aparecer aqui -->
+    <div class="navigation" id="navigationBar">
+        <button class="nav-btn" id="btnPrev" onclick="changePage(-1)">Fechar 📕</button>
+        <span class="page-indicator">Pág <span id="pageNumber">1</span></span>
+        <button class="nav-btn" id="btnNext" onclick="changePage(1)">Avançar &#9654;</button>
+    </div>
+
+    <input type="file" id="fileInput" accept="image/*" style="display: none;">
+    <div class="modal-overlay" id="captionModal">
+        <div class="modal-box">
+            <h2>Escreva uma legenda:</h2>
+            <input type="text" id="modalCaptionInput" placeholder="Ex: Nosso primeiro encontro..." autocomplete="off">
+            <button onclick="savePhotoWithCaption()">Colar Foto ✨</button>
+        </div>
     </div>
 
     <script>
-        // Carrega as fotos salvas no navegador quando a página abre
-        let photos = JSON.parse(localStorage.getItem('omori_album')) || [];
-
-        function renderAlbum() {
-            const grid = document.getElementById('albumGrid');
-            grid.innerHTML = ''; // Limpa a tela
-
-            photos.forEach((photo, index) => {
-                const polaroid = document.createElement('div');
-                polaroid.className = 'polaroid';
-                
-                polaroid.innerHTML = `
-                    <button class="delete-btn" onclick="deletePhoto(${index})">X</button>
-                    <img src="${photo.image}" alt="Memory">
-                    <div class="caption">${photo.caption}</div>
-                `;
-                
-                grid.appendChild(polaroid);
-            });
+        // --- EFEITO SONORO ---
+        const flipSound = new Audio('som.mp3');
+        function playFlipSound() {
+            flipSound.currentTime = 0; // Reseta o áudio para tocar desde o começo se você virar rápido
+            flipSound.play().catch(e => console.log('Áudio aguardando interação...'));
         }
 
-        function addPhoto() {
-            const imageInput = document.getElementById('imageInput');
-            const captionInput = document.getElementById('captionInput');
+        let photosData = JSON.parse(localStorage.getItem('omori_album_slots')) || [];
+        let currentPage = 0;
+        const slotsPerPage = 2;
+        let currentSlotBeingEdited = null;
+        let temporaryImageBase64 = null;
+        let isAnimating = false; 
+        let isBookOpen = false;
 
-            if (imageInput.files.length === 0) {
-                alert('Por favor, escolha uma imagem primeiro!');
+        const fileInput = document.getElementById('fileInput');
+        const modal = document.getElementById('captionModal');
+        const captionInput = document.getElementById('modalCaptionInput');
+        const pageContent = document.getElementById('pageContent');
+        const btnPrev = document.getElementById('btnPrev');
+        const navBar = document.getElementById('navigationBar');
+
+        function openBook() {
+            playFlipSound(); // Toca o som ao abrir a capa
+            document.getElementById('bookCover').classList.add('open');
+            isBookOpen = true;
+            
+            setTimeout(() => {
+                navBar.style.opacity = '1';
+                navBar.style.pointerEvents = 'auto';
+                renderPageUI(); 
+            }, 500);
+        }
+
+        function closeBook() {
+            playFlipSound(); // Toca o som ao fechar a capa
+            navBar.style.opacity = '0';
+            navBar.style.pointerEvents = 'none';
+            isBookOpen = false;
+            
+            document.getElementById('bookCover').classList.remove('open');
+            currentPage = 0; 
+        }
+
+        function renderPageUI() {
+            pageContent.innerHTML = '';
+            
+            const startSlot = currentPage * slotsPerPage;
+            for (let i = 0; i < slotsPerPage; i++) {
+                const globalSlotIndex = startSlot + i;
+                const photo = photosData[globalSlotIndex];
+                const slotDiv = document.createElement('div');
+                
+                if (photo) {
+                    slotDiv.className = 'slot filled';
+                    slotDiv.innerHTML = `
+                        <button class="delete-btn" onclick="deletePhoto(${globalSlotIndex}, event)">X</button>
+                        <img src="${photo.image}" alt="Memory">
+                        <div class="caption">${photo.caption}</div>
+                    `;
+                } else {
+                    slotDiv.className = 'slot';
+                    slotDiv.innerHTML = `<div class="plus">+</div>`;
+                    slotDiv.onclick = () => openFileUploader(globalSlotIndex);
+                }
+                pageContent.appendChild(slotDiv);
+            }
+
+            document.getElementById('pageNumber').innerText = currentPage + 1;
+            
+            if (currentPage === 0) {
+                btnPrev.innerHTML = 'Fechar 📕';
+            } else {
+                btnPrev.innerHTML = '&#9664; Voltar';
+            }
+        }
+
+        function changePage(direction) {
+            if (isAnimating) return; 
+            if (direction === -1 && currentPage === 0) {
+                closeBook();
                 return;
             }
 
-            const file = imageInput.files[0];
-            const reader = new FileReader();
+            playFlipSound(); // Toca o som ao virar a página
+            isAnimating = true;
 
-            // Quando terminar de ler a imagem, salva e atualiza a tela
-            reader.onload = function(e) {
-                const newPhoto = {
-                    image: e.target.result,
-                    caption: captionInput.value || '...'
-                };
+            if (direction === 1) {
+                pageContent.style.animation = 'foldLeftOut 0.35s forwards';
+            } else {
+                pageContent.style.animation = 'foldRightOut 0.35s forwards';
+            }
 
-                photos.push(newPhoto);
-                localStorage.setItem('omori_album', JSON.stringify(photos));
-                
-                // Limpa os inputs
-                imageInput.value = '';
-                captionInput.value = '';
-                
-                renderAlbum();
-            };
+            setTimeout(() => {
+                currentPage += direction;
+                renderPageUI();
 
-            // Transforma a imagem num texto (Base64) para poder salvar
-            reader.readAsDataURL(file);
+                if (direction === 1) {
+                    pageContent.style.animation = 'foldRightIn 0.35s forwards';
+                } else {
+                    pageContent.style.animation = 'foldLeftIn 0.35s forwards';
+                }
+
+                setTimeout(() => {
+                    isAnimating = false;
+                }, 350);
+            }, 350); 
         }
 
-        function deletePhoto(index) {
-            if(confirm("Tem certeza que quer remover essa memória?")) {
-                photos.splice(index, 1);
-                localStorage.setItem('omori_album', JSON.stringify(photos));
-                renderAlbum();
+        function openFileUploader(slotIndex) {
+            currentSlotBeingEdited = slotIndex;
+            fileInput.click();
+        }
+
+        fileInput.addEventListener('change', function(e) {
+            if (e.target.files.length === 0) return;
+            const file = e.target.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function(event) {
+                temporaryImageBase64 = event.target.result;
+                modal.style.display = 'flex';
+                captionInput.value = '';
+                captionInput.focus();
+            };
+            reader.readAsDataURL(file);
+        });
+
+        function savePhotoWithCaption() {
+            const caption = captionInput.value || '...';
+            photosData[currentSlotBeingEdited] = { image: temporaryImageBase64, caption: caption };
+            localStorage.setItem('omori_album_slots', JSON.stringify(photosData));
+            
+            modal.style.display = 'none';
+            temporaryImageBase64 = null;
+            fileInput.value = '';
+            
+            renderPageUI();
+        }
+
+        function deletePhoto(index, event) {
+            event.stopPropagation();
+            if(confirm("Tem certeza que quer remover essa foto desta página?")) {
+                photosData[index] = null;
+                while(photosData.length > 0 && photosData[photosData.length - 1] === null) {
+                    photosData.pop();
+                }
+                localStorage.setItem('omori_album_slots', JSON.stringify(photosData));
+                renderPageUI();
             }
         }
 
-        // Renderiza o álbum logo que a página carrega
-        renderAlbum();
+        let touchstartX = 0; let touchendX = 0;
+        const album = document.getElementById('bookContainer');
+
+        album.addEventListener('touchstart', e => { touchstartX = e.changedTouches[0].screenX; }, {passive: true});
+        album.addEventListener('touchend', e => { 
+            touchendX = e.changedTouches[0].screenX;
+            handleSwipe();
+        }, {passive: true});
+
+        function handleSwipe() {
+            const swipeThreshold = 60; 
+            if (isBookOpen) {
+                if (touchendX < touchstartX - swipeThreshold) changePage(1); 
+                if (touchendX > touchstartX + swipeThreshold) changePage(-1); 
+            }
+        }
+        
+        renderPageUI();
     </script>
 </body>
 </html>
