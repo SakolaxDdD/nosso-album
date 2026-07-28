@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nosso Album de fotos ❤️</title>
+    <title>Nosso Álbum de fotos ❤️</title>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <!-- Importando o Supabase para o Navegador -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * { box-sizing: border-box; user-select: none; }
         
@@ -30,7 +32,7 @@
         }
 
         .cover-title { font-size: 3.5rem; text-align: center; text-shadow: 4px 4px 0px #000; margin-bottom: 20px; padding: 0 20px; }
-        .cover-hint { font-size: 1.5rem; color: #b4a7d6; animation: pulse 1.5s infinite; }
+        .cover-hint { font-size: 1.5rem; color: #FF00FF; animation: pulse 1.5s infinite; }
 
         @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
 
@@ -55,13 +57,13 @@
 
         /* Os Espaços das Fotos */
         .slot {
-            flex: 1; border: 3px dashed #b4a7d6; border-radius: 8px; display: flex; flex-direction: column;
+            flex: 1; border: 3px dashed #FF00FF; border-radius: 8px; display: flex; flex-direction: column;
             align-items: center; justify-content: center; cursor: pointer; position: relative; overflow: hidden;
             background: #faf8f5; transition: all 0.2s;
         }
-        .slot:hover { background: #f0ebf5; border-color: #8e7cc3; }
-        .slot .plus { font-size: 5rem; color: #b4a7d6; transition: transform 0.2s; }
-        .slot:hover .plus { transform: scale(1.2); color: #8e7cc3; }
+        .slot:hover { background: #fdf0fd; border-color: #FF00FF; }
+        .slot .plus { font-size: 5rem; color: #FF00FF; transition: transform 0.2s; }
+        .slot:hover .plus { transform: scale(1.2); }
         .slot.filled { border: 1px solid #ddd; background: #fff; box-shadow: 2px 2px 10px rgba(0,0,0,0.2); cursor: default; }
         .slot img { width: 100%; height: calc(100% - 40px); object-fit: cover; border-bottom: 1px solid #eee; }
         .slot .caption { height: 40px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; color: #222; width: 100%; }
@@ -78,63 +80,52 @@
             margin-top: 20px; opacity: 0; pointer-events: none; transition: opacity 0.5s ease;
         }
         .nav-btn {
-            background: transparent; color: #fff; border: 2px solid #fff; padding: 8px 15px; font-size: 1.5rem;
+            background: transparent; color: #fff; border: 2px solid #FF00FF; padding: 8px 15px; font-size: 1.5rem;
             font-family: 'VT323', monospace; cursor: pointer; border-radius: 5px; transition: 0.2s; width: 110px; text-align: center;
         }
-        .nav-btn:hover { background: #fff; color: #4b4075; }
-        .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+        .nav-btn:hover { background: #FF00FF; color: #fff; }
+        .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; border-color: #fff; }
         .page-indicator { font-size: 1.5rem; }
 
         /* Ícone Flutuante da Carta */
         .floating-letter-btn {
-            position: fixed;
-            bottom: 25px;
-            right: 25px;
-            background: #8e7cc3;
-            color: #fff;
-            font-size: 2rem;
-            width: 60px;
-            height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            border: 3px solid #fff;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-            cursor: pointer;
-            z-index: 50;
-            transition: transform 0.2s, background-color 0.2s, opacity 0.3s ease;
-        }
-        .floating-letter-btn:hover {
-            transform: scale(1.1);
-            background: #6a539b;
-        }
+    position: fixed; bottom: 80px; right: 25px; background: #FF00FF; color: #fff; font-size: 2rem;
+    width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;
+    border-radius: 50%; border: 3px solid #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    cursor: pointer; z-index: 50; transition: transform 0.2s, opacity 0.3s ease;
+}
+        .floating-letter-btn:hover { transform: scale(1.1); }
 
-        /* Modais (Legenda e Carta) */
+        /* Modais */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 100; }
         
-        .modal-box { background: #fdfbf7; padding: 25px; border-radius: 10px; border: 3px solid #8e7cc3; text-align: center; width: 90%; max-width: 350px; position: relative; }
+        .modal-box { background: #fdfbf7; padding: 25px; border-radius: 10px; border: 3px solid #FF00FF; text-align: center; width: 90%; max-width: 350px; position: relative; }
         .modal-box h2 { color: #333; margin-top: 0; }
         
         .photo-modal input { width: 100%; font-family: 'VT323', monospace; font-size: 1.5rem; padding: 10px; margin-bottom: 20px; border: 2px solid #ccc; border-radius: 5px; }
-        .photo-modal button { background: #8e7cc3; color: white; border: none; padding: 10px 20px; font-size: 1.5rem; font-family: 'VT323', monospace; cursor: pointer; border-radius: 5px; }
+        .photo-modal button { background: #FF00FF; color: white; border: none; padding: 10px 20px; font-size: 1.5rem; font-family: 'VT323', monospace; cursor: pointer; border-radius: 5px; }
         
         .letter-modal { max-width: 450px; text-align: left; max-height: 80vh; overflow-y: auto; padding: 35px 25px; }
-        .letter-modal h2 { text-align: center; border-bottom: 2px dashed #b4a7d6; padding-bottom: 10px; }
+        .letter-modal h2 { text-align: center; border-bottom: 2px dashed #FF00FF; padding-bottom: 10px; }
         .letter-content { font-size: 1.5rem; color: #333; line-height: 1.4; white-space: pre-wrap; font-family: 'VT323', monospace; margin-top: 15px; }
         .close-letter-btn {
             position: absolute; top: 10px; right: 10px; background: #e06666; color: white; border: none; 
             font-size: 1.2rem; font-family: 'VT323', monospace; cursor: pointer; border-radius: 5px; padding: 2px 10px;
+        }
+        
+        /* Loading global */
+        #loadingOverlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7);
+            display: none; justify-content: center; align-items: center; z-index: 200; font-size: 2rem; color: #FF00FF;
         }
 
     </style>
 </head>
 <body>
 
-    <!-- O Botão flutuante da carta agora tem um ID para podermos escondê-lo -->
-    <div class="floating-letter-btn" id="letterBtn" onclick="openLetter()">
-        ✉️
-    </div>
+    <div id="loadingOverlay">Sincronizando... ☁️</div>
+
+    <div class="floating-letter-btn" id="letterBtn" onclick="openLetter()">✉️</div>
 
     <div class="book-container" id="bookContainer">
         <div class="cover" id="bookCover" onclick="openBook()">
@@ -158,7 +149,7 @@
         <div class="modal-box photo-modal">
             <h2>Escreva uma legenda:</h2>
             <input type="text" id="modalCaptionInput" placeholder="Ex: Nosso primeiro encontro..." autocomplete="off">
-            <button onclick="savePhotoWithCaption()">Colar Foto ✨</button>
+            <button onclick="savePhotoWithCaption()" id="saveBtn">Colar Foto ✨</button>
         </div>
     </div>
 
@@ -167,30 +158,30 @@
             <button class="close-letter-btn" onclick="closeLetter()">X</button>
             <h2>Para você ❤️</h2>
             <div class="letter-content">
-<!-- COLE O TEXTO DA SUA CARTA AQUI -->
-Oi minha fran, eu só queria escrever essa mensagem pra te dizer que eu te amo muito, e que sou muito muito grato por você participar da minha vida. São quase 2 meses juntos, e sinceramente estão sendo os 2 meses mais felizes da minha vida, eu realmente me sinto motivado a continuar me esforçando por nós, cada sufoco e estresse que passo lá no trabalho valem a pena se posso falar com você no fim do dia, mesmo na maioria das vezes estando cansado, eu realmente consigo me sentir bem quando converso com você, é onde eu finalmente consigo descansar.
-Me divirto muito com as coisas que você me conta, quando nós jogamos juntos, quando saímos também, ou até mesmo quando não estamos fazendo nada em específico, só olham vídeo no tiktok ou coisas assim. 
+Meu amor, 
 
-Já falei várias vezes isso mas não me canso de falar, Eu te amo, te amo de uma forma que nunca pensei que gostaria de alguém, e quero que esses 2 meses que estamos juntos se tornem 3, 4, 8, e anos juntos, pois é você que eu quero pra minha vida
+Queria te dar um presente especial que guardasse nossas memórias, para lembrarmos sempre dos nossos melhores momentos.
 
-Eu te amo Fran, obrigado por participar da minha vida 🩷🍬☕
-<!-- FIM DA CARTA -->
+Te amo muito!
             </div>
         </div>
     </div>
 
     <script>
+        // === CONFIGURAÇÃO DO SUPABASE ===
+        const supabaseUrl = 'https://tkhhkuqazuxpohjqqbcn.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRraGhrdXFhenV4cG9oanFxYmNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyMDY0MjMsImV4cCI6MjEwMDc4MjQyM30.xjD3rBk2ejCQPqrsdZstOzZrRCXya1YD1c8_8YERCm8';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
         const flipSound = new Audio('som.mp3');
         function playFlipSound() {
             flipSound.currentTime = 0; 
-            flipSound.play().catch(e => console.log('Áudio aguardando interação...'));
+            flipSound.play().catch(e => console.log('Áudio aguardando...'));
         }
 
-        let photosData = JSON.parse(localStorage.getItem('omori_album_slots')) || [];
+        let photosData = []; // Agora vai vir direto do banco de dados!
         let currentPage = 0;
         const slotsPerPage = 2;
-        let currentSlotBeingEdited = null;
-        let temporaryImageBase64 = null;
         let isAnimating = false; 
         let isBookOpen = false;
 
@@ -200,45 +191,45 @@ Eu te amo Fran, obrigado por participar da minha vida 🩷🍬☕
         const pageContent = document.getElementById('pageContent');
         const btnPrev = document.getElementById('btnPrev');
         const navBar = document.getElementById('navigationBar');
-        const letterBtn = document.getElementById('letterBtn'); // Referência ao botão da carta
+        const letterBtn = document.getElementById('letterBtn');
+        const loading = document.getElementById('loadingOverlay');
 
-        function openLetter() {
-            document.getElementById('letterModal').style.display = 'flex';
-        }
+        // BUSCAR FOTOS DO BANCO DE DADOS
+        async function loadPhotosFromCloud() {
+            const { data, error } = await supabase
+                .from('photos')
+                .select('*')
+                .order('created_at', { ascending: true }); // Mais antigas na página 1
 
-        function closeLetter() {
-            document.getElementById('letterModal').style.display = 'none';
+            if (!error && data) {
+                photosData = data;
+                if (isBookOpen) renderPageUI();
+            }
         }
+        
+        // Carrega ao abrir o site
+        loadPhotosFromCloud();
+
+        function openLetter() { document.getElementById('letterModal').style.display = 'flex'; }
+        function closeLetter() { document.getElementById('letterModal').style.display = 'none'; }
 
         function openBook() {
             playFlipSound(); 
             document.getElementById('bookCover').classList.add('open');
-            
-            // Esconde o botão da carta suavemente
-            letterBtn.style.opacity = '0';
-            letterBtn.style.pointerEvents = 'none';
-            
+            letterBtn.style.opacity = '0'; letterBtn.style.pointerEvents = 'none';
             isBookOpen = true;
-            
             setTimeout(() => {
-                navBar.style.opacity = '1';
-                navBar.style.pointerEvents = 'auto';
+                navBar.style.opacity = '1'; navBar.style.pointerEvents = 'auto';
                 renderPageUI(); 
             }, 500);
         }
 
         function closeBook() {
             playFlipSound(); 
-            navBar.style.opacity = '0';
-            navBar.style.pointerEvents = 'none';
+            navBar.style.opacity = '0'; navBar.style.pointerEvents = 'none';
             isBookOpen = false;
-            
             document.getElementById('bookCover').classList.remove('open');
-            
-            // Traz o botão da carta de volta suavemente
-            letterBtn.style.opacity = '1';
-            letterBtn.style.pointerEvents = 'auto';
-            
+            letterBtn.style.opacity = '1'; letterBtn.style.pointerEvents = 'auto';
             currentPage = 0; 
         }
 
@@ -254,120 +245,124 @@ Eu te amo Fran, obrigado por participar da minha vida 🩷🍬☕
                 if (photo) {
                     slotDiv.className = 'slot filled';
                     slotDiv.innerHTML = `
-                        <button class="delete-btn" onclick="deletePhoto(${globalSlotIndex}, event)">X</button>
-                        <img src="${photo.image}" alt="Memory">
+                        <button class="delete-btn" onclick="deletePhoto('${photo.id}', event)">X</button>
+                        <img src="${photo.image_url}" alt="Memory">
                         <div class="caption">${photo.caption}</div>
                     `;
                 } else {
-                    slotDiv.className = 'slot';
-                    slotDiv.innerHTML = `<div class="plus">+</div>`;
-                    slotDiv.onclick = () => openFileUploader(globalSlotIndex);
+                    // Só mostra o + se for o próximo espaço em branco consecutivo (para não pular)
+                    if (globalSlotIndex === photosData.length) {
+                        slotDiv.className = 'slot';
+                        slotDiv.innerHTML = `<div class="plus">+</div>`;
+                        slotDiv.onclick = () => fileInput.click();
+                    } else if (globalSlotIndex > photosData.length) {
+                        // Slot totalmente vazio, esperando o anterior ser preenchido
+                        slotDiv.className = 'slot';
+                        slotDiv.style.border = 'none';
+                        slotDiv.style.background = 'transparent';
+                    }
                 }
                 pageContent.appendChild(slotDiv);
             }
 
             document.getElementById('pageNumber').innerText = currentPage + 1;
-            
-            if (currentPage === 0) {
-                btnPrev.innerHTML = 'Fechar 📕';
-            } else {
-                btnPrev.innerHTML = '&#9664; Voltar';
-            }
+            btnPrev.innerHTML = (currentPage === 0) ? 'Fechar 📕' : '&#9664; Voltar';
         }
 
         function changePage(direction) {
             if (isAnimating) return; 
-            if (direction === -1 && currentPage === 0) {
-                closeBook();
-                return;
-            }
+            if (direction === -1 && currentPage === 0) { closeBook(); return; }
+
+            // Impede avançar se a página atual não tiver pelo menos 1 foto preenchida
+            const startSlot = currentPage * slotsPerPage;
+            if (direction === 1 && !photosData[startSlot]) return; 
 
             playFlipSound(); 
             isAnimating = true;
 
-            if (direction === 1) {
-                pageContent.style.animation = 'foldLeftOut 0.35s forwards';
-            } else {
-                pageContent.style.animation = 'foldRightOut 0.35s forwards';
-            }
+            pageContent.style.animation = direction === 1 ? 'foldLeftOut 0.35s forwards' : 'foldRightOut 0.35s forwards';
 
             setTimeout(() => {
                 currentPage += direction;
                 renderPageUI();
-
-                if (direction === 1) {
-                    pageContent.style.animation = 'foldRightIn 0.35s forwards';
-                } else {
-                    pageContent.style.animation = 'foldLeftIn 0.35s forwards';
-                }
-
-                setTimeout(() => {
-                    isAnimating = false;
-                }, 350);
+                pageContent.style.animation = direction === 1 ? 'foldRightIn 0.35s forwards' : 'foldLeftIn 0.35s forwards';
+                setTimeout(() => { isAnimating = false; }, 350);
             }, 350); 
-        }
-
-        function openFileUploader(slotIndex) {
-            currentSlotBeingEdited = slotIndex;
-            fileInput.click();
         }
 
         fileInput.addEventListener('change', function(e) {
             if (e.target.files.length === 0) return;
-            const file = e.target.files[0];
-            const reader = new FileReader();
-
-            reader.onload = function(event) {
-                temporaryImageBase64 = event.target.result;
-                modal.style.display = 'flex';
-                captionInput.value = '';
-                captionInput.focus();
-            };
-            reader.readAsDataURL(file);
+            modal.style.display = 'flex';
+            captionInput.value = '';
+            captionInput.focus();
         });
 
-        function savePhotoWithCaption() {
-            const caption = captionInput.value || '...';
-            photosData[currentSlotBeingEdited] = { image: temporaryImageBase64, caption: caption };
-            localStorage.setItem('omori_album_slots', JSON.stringify(photosData));
-            
+        async function savePhotoWithCaption() {
+            const file = fileInput.files[0];
+            if (!file) return;
+
             modal.style.display = 'none';
-            temporaryImageBase64 = null;
-            fileInput.value = '';
-            
-            renderPageUI();
+            loading.style.display = 'flex'; // Tela de carregamento enquanto manda pra nuvem
+
+            const fileExt = file.name.split('.').pop();
+            const fileName = `foto_${Date.now()}.${fileExt}`;
+            const caption = captionInput.value || '...';
+
+            try {
+                // 1. Faz upload para o bucket
+                const { data: uploadData, error: uploadError } = await supabase.storage
+                    .from('album_fotos')
+                    .upload(fileName, file);
+
+                if (uploadError) throw uploadError;
+
+                // 2. Pega a URL pública
+                const { data: urlData } = supabase.storage
+                    .from('album_fotos')
+                    .getPublicUrl(fileName);
+
+                // 3. Salva no banco de dados
+                await supabase.from('photos').insert([{ image_url: urlData.publicUrl, caption: caption }]);
+
+                // 4. Atualiza o álbum visualmente
+                await loadPhotosFromCloud();
+                fileInput.value = '';
+            } catch (err) {
+                alert("Erro ao salvar foto. Verifique se o bucket 'album_fotos' existe e tem permissão!");
+                console.error(err);
+            }
+            loading.style.display = 'none';
         }
 
-        function deletePhoto(index, event) {
+        async function deletePhoto(id, event) {
             event.stopPropagation();
-            if(confirm("Tem certeza que quer remover essa foto desta página?")) {
-                photosData[index] = null;
-                while(photosData.length > 0 && photosData[photosData.length - 1] === null) {
-                    photosData.pop();
-                }
-                localStorage.setItem('omori_album_slots', JSON.stringify(photosData));
+            if(confirm("Tem certeza que quer remover essa foto do nosso álbum?")) {
+                loading.style.display = 'flex';
+                await supabase.from('photos').delete().eq('id', id);
+                await loadPhotosFromCloud();
+                
+                // Se apagou a última foto da página, volta pra página anterior
+                const maxPage = Math.max(0, Math.ceil(photosData.length / slotsPerPage) - 1);
+                if (currentPage > maxPage) currentPage = maxPage;
+                
                 renderPageUI();
+                loading.style.display = 'none';
             }
         }
 
+        // Swipe (Deslizar)
         let touchstartX = 0; let touchendX = 0;
         const album = document.getElementById('bookContainer');
 
         album.addEventListener('touchstart', e => { touchstartX = e.changedTouches[0].screenX; }, {passive: true});
         album.addEventListener('touchend', e => { 
             touchendX = e.changedTouches[0].screenX;
-            handleSwipe();
-        }, {passive: true});
-
-        function handleSwipe() {
             const swipeThreshold = 60; 
             if (isBookOpen) {
                 if (touchendX < touchstartX - swipeThreshold) changePage(1); 
                 if (touchendX > touchstartX + swipeThreshold) changePage(-1); 
             }
-        }
-        
-        renderPageUI();
+        }, {passive: true});
     </script>
 </body>
 </html>
