@@ -15,8 +15,8 @@
             height: 100vh; overflow: hidden; perspective: 1500px; 
         }
 
-        /* ÁLBUM MAIOR */
-        .book-container { position: relative; width: 92%; max-width: 500px; height: 82vh; transform-style: preserve-3d; }
+        /* ÁLBUM MAIOR, MAS COM ESPAÇO PARA OS BOTÕES */
+        .book-container { position: relative; width: 92%; max-width: 500px; height: 75vh; transform-style: preserve-3d; }
 
         .cover {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #2a1f42;
@@ -45,10 +45,11 @@
         @keyframes foldRightOut { to { transform: rotateY(90deg); transform-origin: right center; opacity: 0; } }
         @keyframes foldLeftIn { from { transform: rotateY(-90deg); transform-origin: left center; opacity: 0; } to { transform: rotateY(0deg); transform-origin: left center; opacity: 1; } }
 
-        /* Estilo base do Slot (Espaço Vazio) */
+        /* Estilo base do Slot - AGORA TRAVADO EM 50% */
         .slot {
-            flex: 1; 
-            min-height: 0;
+            flex: 1 1 0; /* Força os dois quadrados a terem exatamente o mesmo tamanho */
+            height: 50%;
+            min-height: 0; /* Impede que cresçam infinitamente */
             border: 3px dashed #FF00FF; border-radius: 8px; display: flex; flex-direction: column;
             align-items: center; justify-content: center; cursor: pointer; position: relative;
             background: #faf8f5; transition: all 0.2s;
@@ -57,20 +58,21 @@
         .slot .plus { font-size: 5rem; color: #FF00FF; transition: transform 0.2s; }
         .slot:hover .plus { transform: scale(1.2); }
         
-        /* ESTILO POLAROID (Apenas quando preenchido) */
+        /* ESTILO POLAROID PROPORCIONAL */
         .slot.filled { 
             border: 1px solid #eaeaea; 
             background: #fff; 
             box-shadow: 2px 4px 15px rgba(0,0,0,0.15); 
             cursor: pointer; 
-            padding: 10px 10px 35px 10px; 
+            padding: 8px 8px 30px 8px; /* Reduzido levemente para caber melhor na tela */
             border-radius: 4px;
         }
         
         /* A FOTO DENTRO DA POLAROID */
         .slot img { 
             width: 100%; 
-            flex: 1; 
+            height: 100%; /* Obriga a foto a respeitar a moldura */
+            flex: 1 1 0; 
             min-height: 0; 
             object-fit: cover; 
             border-radius: 2px; 
@@ -194,10 +196,10 @@ Eu te amo Fran, obrigado por participar da minha vida 🩷🍬☕</div>
         function getEl(id) { return document.getElementById(id); }
 
         // --- SISTEMA DE ÁUDIO ATUALIZADO ---
+        // A dica é: O arquivo DEVE se chamar exatamente "som.mp3" no GitHub (minúsculo)
         const flipSound = new Audio('som.mp3');
-        flipSound.preload = 'auto'; // Força o celular a deixar o som engatilhado
+        flipSound.preload = 'auto'; 
 
-        // O Truque: Ao tocar em qualquer lugar da tela pela primeira vez, ele "destrava" o som no sistema do celular
         document.body.addEventListener('touchstart', function() {
             flipSound.load();
         }, { once: true });
@@ -207,7 +209,7 @@ Eu te amo Fran, obrigado por participar da minha vida 🩷🍬☕</div>
                 flipSound.currentTime = 0; 
                 let playPromise = flipSound.play();
                 if (playPromise !== undefined) {
-                    playPromise.catch(e => console.log("Áudio bloqueado pelo navegador.", e));
+                    playPromise.catch(e => console.log("Áudio aguardando liberação do celular...", e));
                 }
             } catch (err) {
                 console.log("Erro no áudio:", err);
