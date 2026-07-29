@@ -15,7 +15,8 @@
             height: 100vh; overflow: hidden; perspective: 1500px; 
         }
 
-        .book-container { position: relative; width: 90%; max-width: 450px; height: 70vh; transform-style: preserve-3d; }
+        /* ÁLBUM MAIOR */
+        .book-container { position: relative; width: 92%; max-width: 500px; height: 82vh; transform-style: preserve-3d; }
 
         .cover {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #2a1f42;
@@ -34,37 +35,59 @@
         .inside-album {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #fdfbf7;
             border-radius: 4px 15px 15px 4px; box-shadow: inset 10px 0 20px rgba(0,0,0,0.1), 10px 10px 30px rgba(0,0,0,0.5);
-            border-left: 8px solid #3a2e5d; display: flex; flex-direction: column; padding: 20px; color: #333; z-index: 10;
+            border-left: 8px solid #3a2e5d; display: flex; flex-direction: column; padding: 15px; color: #333; z-index: 10;
         }
 
-        .page-content { display: flex; flex-direction: column; gap: 20px; height: 100%; }
+        .page-content { display: flex; flex-direction: column; gap: 15px; height: 100%; }
 
         @keyframes foldLeftOut { to { transform: rotateY(-90deg); transform-origin: left center; opacity: 0; } }
         @keyframes foldRightIn { from { transform: rotateY(90deg); transform-origin: right center; opacity: 0; } to { transform: rotateY(0deg); transform-origin: right center; opacity: 1; } }
         @keyframes foldRightOut { to { transform: rotateY(90deg); transform-origin: right center; opacity: 0; } }
         @keyframes foldLeftIn { from { transform: rotateY(-90deg); transform-origin: left center; opacity: 0; } to { transform: rotateY(0deg); transform-origin: left center; opacity: 1; } }
 
+        /* Estilo base do Slot (Espaço Vazio) */
         .slot {
-            flex: 1; border: 3px dashed #FF00FF; border-radius: 8px; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; cursor: pointer; position: relative; overflow: hidden;
+            flex: 1; 
+            min-height: 0;
+            border: 3px dashed #FF00FF; border-radius: 8px; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; cursor: pointer; position: relative;
             background: #faf8f5; transition: all 0.2s;
         }
         .slot:hover { background: #fdf0fd; border-color: #FF00FF; }
         .slot .plus { font-size: 5rem; color: #FF00FF; transition: transform 0.2s; }
         .slot:hover .plus { transform: scale(1.2); }
-        .slot.filled { border: 1px solid #ddd; background: #fff; box-shadow: 2px 2px 10px rgba(0,0,0,0.2); cursor: default; }
-        .slot img { width: 100%; height: calc(100% - 40px); object-fit: cover; border-bottom: 1px solid #eee; }
-        .slot .caption { height: 40px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; color: #222; width: 100%; text-align: center; }
         
+        /* ESTILO POLAROID (Apenas quando preenchido) */
+        .slot.filled { 
+            border: 1px solid #eaeaea; 
+            background: #fff; 
+            box-shadow: 2px 4px 15px rgba(0,0,0,0.15); 
+            cursor: pointer; 
+            padding: 10px 10px 35px 10px; 
+            border-radius: 4px;
+        }
+        
+        /* A FOTO DENTRO DA POLAROID */
+        .slot img { 
+            width: 100%; 
+            flex: 1; 
+            min-height: 0; 
+            object-fit: cover; 
+            border-radius: 2px; 
+            background-color: #222; 
+        }
+        
+        /* Botão de Excluir */
         .delete-btn {
             position: absolute; top: 5px; right: 5px; background: #e06666; color: white; border: none; font-size: 1.2rem;
-            font-family: 'VT323', monospace; cursor: pointer; border-radius: 5px; padding: 2px 8px; opacity: 0; transition: opacity 0.2s;
+            font-family: 'VT323', monospace; cursor: pointer; border-radius: 5px; padding: 2px 10px; opacity: 0; transition: opacity 0.2s; z-index: 5;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
         .slot.filled:hover .delete-btn { opacity: 1; }
 
         .navigation {
             display: flex; justify-content: space-between; align-items: center; width: 90%; max-width: 450px;
-            margin-top: 20px; opacity: 0; pointer-events: none; transition: opacity 0.5s ease;
+            margin-top: 15px; opacity: 0; pointer-events: none; transition: opacity 0.5s ease;
         }
         .nav-btn {
             background: transparent; color: #fff; border: 2px solid #FF00FF; padding: 8px 15px; font-size: 1.5rem;
@@ -83,7 +106,7 @@
         .floating-letter-btn:hover { transform: scale(1.1); }
 
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 100; }
-        .modal-box { background: #fdfbf7; padding: 25px; border-radius: 10px; border: 3px solid #FF00FF; text-align: center; width: 90%; max-width: 350px; position: relative; }
+        .modal-box { background: #fdfbf7; padding: 25px; border-radius: 10px; border: 3px solid #FF00FF; text-align: center; width: 90%; max-width: 380px; position: relative; }
         .modal-box h2 { color: #333; margin-top: 0; }
         
         .photo-modal input { width: 100%; font-family: 'VT323', monospace; font-size: 1.5rem; padding: 10px; margin-bottom: 20px; border: 2px solid #ccc; border-radius: 5px; }
@@ -92,9 +115,10 @@
         .letter-modal { max-width: 450px; text-align: left; max-height: 80vh; overflow-y: auto; padding: 35px 25px; }
         .letter-modal h2 { text-align: center; border-bottom: 2px dashed #FF00FF; padding-bottom: 10px; }
         .letter-content { font-size: 1.5rem; color: #333; line-height: 1.4; white-space: pre-wrap; font-family: 'VT323', monospace; margin-top: 15px; }
-        .close-letter-btn {
+        
+        .close-btn {
             position: absolute; top: 10px; right: 10px; background: #e06666; color: white; border: none; 
-            font-size: 1.2rem; font-family: 'VT323', monospace; cursor: pointer; border-radius: 5px; padding: 2px 10px;
+            font-size: 1.2rem; font-family: 'VT323', monospace; cursor: pointer; border-radius: 5px; padding: 2px 10px; z-index: 10;
         }
         
         #loadingOverlay {
@@ -132,12 +156,21 @@
             <h2>Escreva uma legenda:</h2>
             <input type="text" id="modalCaptionInput" placeholder="Ex: Nosso primeiro encontro..." autocomplete="off">
             <button onclick="savePhotoWithCaption()" id="saveBtn">Colar Foto ✨</button>
+            <button class="close-btn" onclick="document.getElementById('captionModal').style.display='none'">X</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="photoViewerModal" onclick="closePhotoViewer()">
+        <div class="modal-box" onclick="event.stopPropagation()" style="display: flex; flex-direction: column; padding: 15px;">
+            <button class="close-btn" onclick="closePhotoViewer()">X</button>
+            <img id="viewerImage" src="" alt="Memory" style="width: 100%; max-height: 50vh; object-fit: contain; border-radius: 5px; margin-bottom: 15px; border: 1px solid #ddd;">
+            <div id="viewerCaption" style="font-size: 1.8rem; color: #333; text-align: left; white-space: pre-wrap; word-wrap: break-word; max-height: 20vh; overflow-y: auto; line-height: 1.2;"></div>
         </div>
     </div>
 
     <div class="modal-overlay" id="letterModal">
         <div class="modal-box letter-modal">
-            <button class="close-letter-btn" onclick="closeLetter()">X</button>
+            <button class="close-btn" onclick="closeLetter()">X</button>
             <h2>Para você ❤️</h2>
             <div class="letter-content">Oi minha fran, eu só queria escrever essa mensagem pra te dizer que eu te amo muito, e que sou muito muito grato por você participar da minha vida. São quase 2 meses juntos, e sinceramente estão sendo os 2 meses mais felizes da minha vida, eu realmente me sinto motivado a continuar me esforçando por nós, cada sufoco e estresse que passo lá no trabalho valem a pena se posso falar com você no fim do dia, mesmo na maioria das vezes estando cansado, eu realmente consigo me sentir bem quando converso com você, é onde eu finalmente consigo descansar.
 Me divirto muito com as coisas que você me conta, quando nós jogamos juntos, quando saímos também, ou até mesmo quando não estamos fazendo nada em específico, só olham vídeo no tiktok ou coisas assim. 
@@ -149,7 +182,6 @@ Eu te amo Fran, obrigado por participar da minha vida 🩷🍬☕</div>
     </div>
 
     <script>
-        // === VARIÁVEIS GLOBAIS ===
         const supabaseUrl = 'https://tkhhkuqazuxpohjqqbcn.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRraGhrdXFhenV4cG9oanFxYmNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyMDY0MjMsImV4cCI6MjEwMDc4MjQyM30.xjD3rBk2ejCQPqrsdZstOzZrRCXya1YD1c8_8YERCm8';
         
@@ -161,17 +193,39 @@ Eu te amo Fran, obrigado por participar da minha vida 🩷🍬☕</div>
 
         function getEl(id) { return document.getElementById(id); }
 
+        // --- SISTEMA DE ÁUDIO ATUALIZADO ---
         const flipSound = new Audio('som.mp3');
+        flipSound.preload = 'auto'; // Força o celular a deixar o som engatilhado
+
+        // O Truque: Ao tocar em qualquer lugar da tela pela primeira vez, ele "destrava" o som no sistema do celular
+        document.body.addEventListener('touchstart', function() {
+            flipSound.load();
+        }, { once: true });
+
         function playFlipSound() {
             try {
-                if (flipSound.readyState > 0) flipSound.currentTime = 0; 
+                flipSound.currentTime = 0; 
                 let playPromise = flipSound.play();
-                if (playPromise !== undefined) playPromise.catch(e => {});
-            } catch (err) {}
+                if (playPromise !== undefined) {
+                    playPromise.catch(e => console.log("Áudio bloqueado pelo navegador.", e));
+                }
+            } catch (err) {
+                console.log("Erro no áudio:", err);
+            }
         }
+        // ------------------------------------
 
         function openLetter() { getEl('letterModal').style.display = 'flex'; }
         function closeLetter() { getEl('letterModal').style.display = 'none'; }
+        
+        function openPhotoViewer(url, caption) {
+            getEl('viewerImage').src = url;
+            getEl('viewerCaption').innerText = caption;
+            getEl('photoViewerModal').style.display = 'flex';
+        }
+        function closePhotoViewer() {
+            getEl('photoViewerModal').style.display = 'none';
+        }
 
         function openBook() {
             playFlipSound();
@@ -210,13 +264,13 @@ Eu te amo Fran, obrigado por participar da minha vida 🩷🍬☕</div>
                 
                 if (photo) {
                     slotDiv.className = 'slot filled';
+                    slotDiv.onclick = () => openPhotoViewer(photo.image_url, photo.caption);
+                    
                     slotDiv.innerHTML = `
                         <button class="delete-btn" onclick="deletePhoto('${photo.id}', event)">X</button>
                         <img src="${photo.image_url}" alt="Memory">
-                        <div class="caption">${photo.caption}</div>
                     `;
                 } else {
-                    // Agora sempre desenha o quadrado com o "+"
                     slotDiv.className = 'slot';
                     slotDiv.innerHTML = `<div class="plus">+</div>`;
                     slotDiv.onclick = () => getEl('fileInput').click();
@@ -232,7 +286,6 @@ Eu te amo Fran, obrigado por participar da minha vida 🩷🍬☕</div>
             if (isAnimating) return; 
             if (direction === -1 && currentPage === 0) { closeBook(); return; }
 
-            // Lógica antiga impedia de avançar. Removi isso para você poder folhear livremente!
             playFlipSound();
             isAnimating = true;
             const pageContent = getEl('pageContent');
@@ -271,7 +324,6 @@ Eu te amo Fran, obrigado por participar da minha vida 🩷🍬☕</div>
             const caption = getEl('modalCaptionInput').value || '...';
 
             try {
-                // Upload
                 const uploadRes = await fetch(`${supabaseUrl}/storage/v1/object/album_fotos/${fileName}`, {
                     method: 'POST',
                     headers: { 'apikey': supabaseKey, 'Authorization': `Bearer ${supabaseKey}`, 'Content-Type': file.type },
@@ -281,7 +333,6 @@ Eu te amo Fran, obrigado por participar da minha vida 🩷🍬☕</div>
 
                 const publicUrl = `${supabaseUrl}/storage/v1/object/public/album_fotos/${fileName}`;
 
-                // Salvar
                 const dbRes = await fetch(`${supabaseUrl}/rest/v1/photos`, {
                     method: 'POST',
                     headers: { 'apikey': supabaseKey, 'Authorization': `Bearer ${supabaseKey}`, 'Content-Type': 'application/json' },
